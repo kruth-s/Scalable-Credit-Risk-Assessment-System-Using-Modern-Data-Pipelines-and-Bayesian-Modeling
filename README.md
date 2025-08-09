@@ -22,6 +22,19 @@ The architecture follows a modular and scalable data pipeline:
 4. **Risk Modeling**: Implements Bayesian inference and logistic regression.
 5. **Dashboard**: Provides an interactive dashboard built with Streamlit for visualizing credit risk scores.
 
+
+## Streaming in the Pipeline
+
+Source Events (Producer) — Simulated customer activity (e.g., payment made, missed payment, credit usage spike) is emitted continuously.
+
+Message Broker (Kafka) — Acts as a durable, scalable buffer that decouples event producers and consumers.
+
+Stream Processor (Consumer) — Subscribes to Kafka topics, cleans/enriches events, updates risk scores (Bayesian or feature updates), and writes results to storage (Postgres / Delta / Redis).
+
+Serving Layer / Dashboard — Reads latest risk scores from storage and visualizes them in Streamlit.
+
+Batch Pipeline (Airflow) — Periodically ingests historical data (loan_applications.csv), retrains models, and backfills results. Streaming adds near real-time updates on top of batch insights.
+
 ## Directory Structure
 
 ```
