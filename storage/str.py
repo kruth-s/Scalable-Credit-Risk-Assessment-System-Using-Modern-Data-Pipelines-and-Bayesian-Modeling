@@ -9,19 +9,19 @@ def get_connection(pg_conn):
     return psycopg2.connect(**pg_conn)
 
 
-def save_risk_score(pg_conn, applicant_id, prior_prob=None, posterior_prob=None, last_event=None):
-    """Upsert a risk score row into canonical `risk_scores` table.
+def save_risk_score(pg_conn, customer_id, prior_prob=None, posterior_prob=None, last_event=None):
+    """Upsert a risk score row into canonical `risk_scores` table using customer_id (UUID/text).
 
     The table schema (created if missing):
-      applicant_id INT PRIMARY KEY,
-      prior_prob FLOAT,
-      posterior_prob FLOAT,
+      customer_id UUID PRIMARY KEY,
+      prior_prob DOUBLE PRECISION,
+      posterior_prob DOUBLE PRECISION,
       last_updated TIMESTAMP,
       last_event JSONB
     """
     create_table_sql = """
     CREATE TABLE IF NOT EXISTS risk_scores (
-        applicant_id INTEGER PRIMARY KEY,
+        customer_id UUID PRIMARY KEY,
         prior_prob DOUBLE PRECISION,
         posterior_prob DOUBLE PRECISION,
         last_updated TIMESTAMP,
@@ -30,9 +30,9 @@ def save_risk_score(pg_conn, applicant_id, prior_prob=None, posterior_prob=None,
     """
 
     insert_sql = """
-    INSERT INTO risk_scores (applicant_id, prior_prob, posterior_prob, last_updated, last_event)
+    INSERT INTO risk_scores (customer_id, prior_prob, posterior_prob, last_updated, last_event)
     VALUES (%s, %s, %s, %s, %s)
-    ON CONFLICT (applicant_id) DO UPDATE SET
+    ON CONFLICT (customer_id) DO UPDATE SET
       prior_prob = COALESCE(EXCLUDED.prior_prob, risk_scores.prior_prob),
       posterior_prob = COALESCE(EXCLUDED.posterior_prob, risk_scores.posterior_prob),
       last_updated = EXCLUDED.last_updated,
@@ -43,7 +43,7 @@ def save_risk_score(pg_conn, applicant_id, prior_prob=None, posterior_prob=None,
         with conn.cursor() as cur:
             cur.execute(create_table_sql)
             cur.execute(insert_sql, (
-                applicant_id,
+                customer_id,
                 prior_prob,
                 posterior_prob,
                 datetime.utcnow(),
