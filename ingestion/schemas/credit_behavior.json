@@ -1,0 +1,15 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "credit_behavior_event",
+  "type": "object",
+  "properties": {
+    "event_id": {"type": "string", "format": "uuid"},
+    "customer_id": {"type": "string", "format": "uuid"},
+    "event_time": {"type": "string", "format": "date-time"},
+    "event_type": {"type": "string", "enum": ["payment_made", "payment_missed", "utilization_spike", "loan_application"]},
+    "amount": {"type": "number"},
+    "current_credit_util": {"type": "number", "minimum": 0, "maximum": 1},
+    "metadata": {"type": ["object", "null"]}
+  },
+  "required": ["event_id", "customer_id", "event_time", "event_type"]
+}
